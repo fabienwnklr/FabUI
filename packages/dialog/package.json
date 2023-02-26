@@ -1,0 +1,26 @@
+{
+  "name": "dialog",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "main": "dist/fab-dialog.es.js",
+  "exports": {
+    ".": "./dist/fab-dialog.es.js"
+  },
+  "types": "types/fab-dialog.d.ts",
+  "files": [
+    "dist",
+    "types"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build"
+  },
+  "dependencies": {
+    "lit": "^2.6.1"
+  },
+  "devDependencies": {
+    "typescript": "^4.9.3",
+    "vite": "^4.1.0"
+  }
+}
