@@ -4,17 +4,36 @@ import { customElement, property } from 'lit/decorators.js';
 @customElement('fab-dialog')
 export class FabDialog extends LitElement {
   @property({ type: Boolean })
-  show = true;
+  visible = false;
+
+  @property({ type: Boolean })
+  movable = false;
+
+  @property({ type: Boolean })
+  reducible = false;
+
+  @property({ type: Boolean })
+  expandable = false;
+
+  @property({ type: Boolean })
+  closable = true;
 
   @property({ type: String })
   colorPrimary = '#3e3e3e';
 
   render() {
     return html`
-      <div class="fab-dialog${this.show ? ' show' : ''}">
+      <div class="fab-dialog${this.visible ? ' show' : ''}${this.movable ? ' draggable' : ''}">
         <div class="fab-dialog-header">
           <slot name="header">
             <h3 class="fab-dialog-title">Default Heading</h3>
+          </slot>
+          <slot name="icons">
+            <div class="fab-dialog-icons">
+              ${this.reducible ? html`<button class="reduce"></button>` : ''}
+              ${this.expandable ? html`<button class="expand"></button>` : ''}
+              ${this.closable ? html`<button @click=${this.hide} class="close"></button>` : ''}
+            </div>
           </slot>
         </div>
         <div class="fab-dialog-body">
@@ -24,6 +43,38 @@ export class FabDialog extends LitElement {
         </div>
       </div>
     `;
+  }
+
+  private _dispatchFabModalEvent(eventName: string): void {
+    this.dispatchEvent(new CustomEvent(`fabmodal:${eventName}`));
+  }
+
+  reduce() {}
+
+  toggleExpand() {}
+
+  show() {
+    this._dispatchFabModalEvent('show');
+    this.setAttribute('visible', '');
+    this._dispatchFabModalEvent('hidden');
+  }
+
+  toggle() {
+    this._dispatchFabModalEvent('toggle');
+    this.toggleAttribute('visible');
+    this._dispatchFabModalEvent('toggled');
+  }
+
+  hide() {
+    this._dispatchFabModalEvent('hide');
+    this.removeAttribute('visible');
+    this._dispatchFabModalEvent('hidden');
+  }
+
+  destroy() {
+    this._dispatchFabModalEvent('destroy');
+    this.remove();
+    this._dispatchFabModalEvent('destroyed');
   }
 
   static styles = css`
@@ -179,12 +230,12 @@ export class FabDialog extends LitElement {
       color: rgba(0, 0, 0, 0.8);
     }
 
-    .fab-dialog .fab-dialog-header .fab-icons {
+    .fab-dialog .fab-dialog-header .fab-dialog-icons {
       display: flex;
       margin-right: 0.5rem;
     }
 
-    .fab-dialog .fab-dialog-header .fab-icons button {
+    .fab-dialog .fab-dialog-header .fab-dialog-icons button {
       outline: none;
       background: transparent;
       border: transparent;
@@ -196,25 +247,25 @@ export class FabDialog extends LitElement {
       transition: opacity 0.2s ease-in;
     }
 
-    .fab-dialog .fab-dialog-header .fab-icons button:before {
+    .fab-dialog .fab-dialog-header .fab-dialog-icons button:before {
       color: rgba(0, 0, 0, 0.8);
       font-weight: 300;
       font-size: 1.2rem;
       font-family: Arial, sans-serif;
     }
 
-    .fab-dialog .fab-dialog-header .fab-icons button:hover {
+    .fab-dialog .fab-dialog-header .fab-dialog-icons button:hover {
       opacity: 1;
     }
 
-    .fab-dialog .fab-dialog-header .fab-icons .reduce:before {
+    .fab-dialog .fab-dialog-header .fab-dialog-icons .reduce:before {
       content: '\\2012';
     }
 
-    .fab-dialog .fab-dialog-header .fab-icons .expand:before {
+    .fab-dialog .fab-dialog-header .fab-dialog-icons .expand:before {
       content: '\\26F6';
     }
-    .fab-dialog .fab-dialog-header .fab-icons .close:before {
+    .fab-dialog .fab-dialog-header .fab-dialog-icons .close:before {
       content: '\\2715';
     }
 

@@ -1,7 +1,7 @@
 {
-  "name": "dialog",
+  "name": "@fabui/dialog",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "main": "dist/fab-dialog.es.js",
   "exports": {
