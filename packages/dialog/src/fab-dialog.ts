@@ -21,6 +21,10 @@ export class FabDialog extends LitElement {
   @property({ type: String })
   colorPrimary = '#3e3e3e';
 
+  private $el: HTMLDivElement | null = null;
+  private _disX = 0;
+  private _disY = 0;
+
   render() {
     return html`
       <div class="fab-dialog${this.visible ? ' show' : ''}${this.movable ? ' draggable' : ''}">
@@ -30,8 +34,7 @@ export class FabDialog extends LitElement {
           </slot>
           <slot name="icons">
             <div class="fab-dialog-icons">
-              ${this.reducible ? html`<button class="reduce"></button>` : ''}
-              ${this.expandable ? html`<button class="expand"></button>` : ''}
+              ${this.reducible ? html`<button class="reduce"></button>` : ''} ${this.expandable ? html`<button class="expand"></button>` : ''}
               ${this.closable ? html`<button @click=${this.hide} class="close"></button>` : ''}
             </div>
           </slot>
@@ -45,11 +48,69 @@ export class FabDialog extends LitElement {
     `;
   }
 
+
+  connectedCallback() {
+    super.connectedCallback();
+  }
+
+  firstUpdated() {
+    this.$el = this.renderRoot.querySelector('.fab-dialog');
+    this._iniHandler();
+  }
+
+
   private _dispatchFabModalEvent(eventName: string): void {
     this.dispatchEvent(new CustomEvent(`fabmodal:${eventName}`));
   }
 
-  reduce() {}
+  reduce() { }
+  
+  private _iniHandler() {
+    if (this.movable) {
+      this.$el!.addEventListener('mousedown', this._fnDown.bind(this));
+    }
+  }
+
+  private _fnDown(ev: MouseEvent) {
+    const that = this.parentNode as FabDialog;
+
+    this._disX = ev.clientX - this.$el!.offsetLeft;
+    this._disY = ev.clientY - this.$el!.offsetTop;
+
+    document.onmousemove = this._fnMove.bind(this);
+    document.onmouseup = this._fnUp.bind(this);
+
+    return false;
+  }
+
+  /**
+   * @ignore
+   */
+  private _fnMove(ev: MouseEvent) {
+    const left = ev.clientX - this._disX;
+    const top = ev.clientY - this._disY;
+    const limitRight = window.innerWidth - this.clientWidth / 2;
+    const limitLeft = this.clientWidth / 2;
+    const limitTop = this.clientHeight / 2;
+    const limitBottom = window.innerHeight - this.clientHeight / 2;
+
+    if (left > limitLeft && left < limitRight) {
+      // this.shadowRoot
+      this.$el!.style.left = `${left}px`;
+    }
+
+    if (top > limitTop && top < limitBottom) {
+      this.$el!.style.top = `${top}px`;
+    }
+  }
+
+  /**
+   * @ignore
+   */
+  private _fnUp() {
+    document.onmousemove = null;
+    document.onmouseup = null;
+  }
 
   toggleExpand() {}
 
