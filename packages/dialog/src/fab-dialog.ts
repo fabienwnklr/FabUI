@@ -21,58 +21,107 @@ export class FabDialog extends LitElement {
   @property({ type: String })
   colorPrimary = '#3e3e3e';
 
+  @property({ type: Boolean })
+  fullscreen = false;
+  
+  @property({ type: Boolean })
+  resizable = false;
+
   private $el: HTMLDivElement | null = null;
   private _disX = 0;
   private _disY = 0;
 
+  public isFullScreen = false;
+  public name = 'fab-dialog';
+  public selector = {
+    el: `${this.name}`,
+    header: `${this.name}-header`,
+    title: `${this.name}-title`,
+    icons: `${this.name}-icons`,
+    reduce: `reduce`,
+    expand: `expand`,
+    close: `close`,
+    body: `${this.name}-body`,
+    footer: `${this.name}-footer`,
+    dragging: `is-dragging`
+  };
+
   render() {
     return html`
-      <div class="fab-dialog${this.visible ? ' show' : ''}${this.movable ? ' draggable' : ''}">
-        <div class="fab-dialog-header">
+      <div class="${this.selector.el}${this.visible ? ' show' : ''}${this.movable ? ' draggable' : ''}${this.resizable ? ' resizable' : ''}">
+        <div class="${this.selector.header}">
           <slot name="header">
-            <h3 class="fab-dialog-title">Default Heading</h3>
+            <h3 class="${this.selector.title}">Default Heading</h3>
           </slot>
           <slot name="icons">
-            <div class="fab-dialog-icons">
-              ${this.reducible ? html`<button class="reduce"></button>` : ''} ${this.expandable ? html`<button class="expand"></button>` : ''}
-              ${this.closable ? html`<button @click=${this.hide} class="close"></button>` : ''}
+            <div class="${this.selector.icons}">
+              ${this.reducible ? html`<button class="${this.selector.reduce}"></button>` : ''} ${this.expandable ? html`<button class="${this.selector.expand}"></button>` : ''}
+              ${this.closable ? html`<button @click=${this.destroy} class="${this.selector.close}"></button>` : ''}
             </div>
           </slot>
         </div>
-        <div class="fab-dialog-body">
+        <div class="${this.selector.body}">
           <slot name="body">
             <div>Default Body</div>
+          </slot>
+        </div>
+        <div class="${this.selector.footer}">
+          <slot name="footer">
+            <div>Default Footer</div>
           </slot>
         </div>
       </div>
     `;
   }
 
-
   connectedCallback() {
     super.connectedCallback();
   }
 
   firstUpdated() {
-    this.$el = this.renderRoot.querySelector('.fab-dialog');
+    this.$el = this.renderRoot.querySelector(`.${this.selector.el}`);
     this._iniHandler();
   }
-
 
   private _dispatchFabModalEvent(eventName: string): void {
     this.dispatchEvent(new CustomEvent(`fabmodal:${eventName}`));
   }
 
-  reduce() { }
-  
+  reduce() {
+    this.$el?.classList.add('reduced');
+    this._dispatchFabModalEvent('reduced');
+  }
+
+  restore() {
+    this.$el?.classList.remove('reduced');
+    this._dispatchFabModalEvent('restored');
+  }
+
+  private _initDrag() {
+    this.$el?.addEventListener('mousedown', this._fnDown.bind(this));
+  }
+
   private _iniHandler() {
     if (this.movable) {
-      this.$el!.addEventListener('mousedown', this._fnDown.bind(this));
+      this._initDrag();
+    }
+
+    if (this.expandable) {
+      this.$el?.querySelector(`.${this.selector.expand}`)?.addEventListener('pointerdown', this.toggleFullscreen.bind(this));
+    }
+
+    if (this.reducible) {
+      this.$el?.querySelector(`.${this.selector.reduce}`)?.addEventListener('pointerdown', this.reduce.bind(this));
     }
   }
 
+  /**
+   * @ignore
+   */
   private _fnDown(ev: MouseEvent) {
-    const that = this.parentNode as FabDialog;
+    const target = ev.target as HTMLElement
+
+    if (!target?.classList.contains(this.selector.header) && !target?.classList.contains(this.selector.title)) return
 
     this._disX = ev.clientX - this.$el!.offsetLeft;
     this._disY = ev.clientY - this.$el!.offsetTop;
@@ -87,12 +136,13 @@ export class FabDialog extends LitElement {
    * @ignore
    */
   private _fnMove(ev: MouseEvent) {
+    this.$el!.classList.add(this.selector.dragging);
     const left = ev.clientX - this._disX;
     const top = ev.clientY - this._disY;
-    const limitRight = window.innerWidth - this.clientWidth / 2;
-    const limitLeft = this.clientWidth / 2;
-    const limitTop = this.clientHeight / 2;
-    const limitBottom = window.innerHeight - this.clientHeight / 2;
+    const limitRight = window.innerWidth - this.$el!.clientWidth / 2;
+    const limitLeft = this.$el!.clientWidth / 2;
+    const limitTop = this.$el!.clientHeight / 2;
+    const limitBottom = window.innerHeight - this.$el!.clientHeight / 2;
 
     if (left > limitLeft && left < limitRight) {
       // this.shadowRoot
@@ -110,9 +160,29 @@ export class FabDialog extends LitElement {
   private _fnUp() {
     document.onmousemove = null;
     document.onmouseup = null;
+    this.$el!.classList.remove(this.selector.dragging);
   }
 
-  toggleExpand() {}
+  toggleFullscreen(): boolean {
+    if (this.$el) {
+      if (this.isFullScreen) {
+        if (this.draggable) this._initDrag();
+        this.isFullScreen = false;
+        // this.$bodyElement.style.overflow = 'auto';
+        this.$el.classList.remove('fullScreen');
+        // if (this.$expand) this.$expand.title = 'Restore';
+
+        this._dispatchFabModalEvent('fullscreenCancel');
+      } else {
+        this.$el.removeEventListener('mousedown', this._fnDown);
+        this.isFullScreen = true;
+        // this.$bodyElement.style.overflow = 'hidden';
+        this.$el.classList.add('fullScreen');
+        this._dispatchFabModalEvent('fullscreen');
+      }
+    }
+    return this.isFullScreen;
+  }
 
   show() {
     this._dispatchFabModalEvent('show');
@@ -180,6 +250,8 @@ export class FabDialog extends LitElement {
       height: auto;
       max-width: 100%;
       max-height: 100%;
+      min-width: 150px;
+      min-height: 300px;
       border-radius: 5px;
       display: none;
       overflow: hidden;
@@ -190,11 +262,18 @@ export class FabDialog extends LitElement {
       resize: both;
     }
 
+    .fab-dialog.is-dragging {
+      pointer-events: none;
+    }
+
     .fab-dialog.show,
     .fab-overlay.show,
     .fab-dialog-tab.show {
       opacity: 1;
-      display: block;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-direction: column;
     }
 
     .fab-tab-close {
@@ -209,16 +288,17 @@ export class FabDialog extends LitElement {
     }
 
     .fab-dialog.fullScreen {
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      width: 100%;
-      height: 100%;
+      top: 0!important;
+      left: 0!important;
+      right: 0!important;
+      bottom: 0!important;
+      width: 100%!important;
+      height: 100%!important;
       max-width: 100%;
       max-height: 100%;
       border-radius: 0;
       transform: unset;
+      resize: none;
     }
 
     .fab-dialog.fullScreen .fab-dialog-header {
@@ -275,6 +355,7 @@ export class FabDialog extends LitElement {
       border-bottom: 1px solid #d8d8d8;
       background-color: #d8d8d8;
       color: #000;
+      width: 100%;
     }
 
     .fab-dialog .fab-dialog-header.draggable {
@@ -334,15 +415,30 @@ export class FabDialog extends LitElement {
       scroll-behavior: smooth;
       position: relative;
       padding: 1rem;
-      min-width: 200px;
-      min-height: 181px;
-      max-width: 100%;
-      height: auto;
+      flex: 1;
       line-height: 1.8;
       color: #0a0a0a;
       overflow: auto;
       color: var(--fab-dialog-color);
       background-color: var(--fab-dialog-background-color);
+      width: 100%;
+    }
+
+    .fab-dialog .fab-dialog-footer {
+      position: relative;
+      padding: 1rem;
+      max-width: 100%;
+      height: auto;
+      line-height: 1.8;
+      color: var(--fab-dialog-color);
+      background-color: var(--fab-dialog-background-color);
+      border-top: 1px solid var(--fab-dialog-color);
+      display: flex;
+      justify-content: end;
+      align-items: center;
+      width: 100%;
+      bottom: 0;
+      min-height: 60px;
     }
   `;
 }
