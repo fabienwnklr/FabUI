@@ -32,6 +32,7 @@ export class FabDialog extends LitElement {
 
   public $el: HTMLDivElement = document.createElement('div');
   public isFullScreen = false;
+  public isFocused = true;
   public isReduced = false;
   public name = 'fab-dialog';
   public selector = {
@@ -52,7 +53,7 @@ export class FabDialog extends LitElement {
       <div
         @focus=${this.setFocused.bind(this)}
         tabindex="0"
-        class="${this.selector.el}${this.visible ? ' show' : ''}${this.movable ? ' draggable' : ''}${this.resizable ? ' resizable' : ''}"
+        class="${this.selector.el}${this.visible ? ' show' : ''}${this.movable ? ' draggable' : ''}${this.resizable ? ' resizable' : ''} focused"
       >
         <div class="${this.selector.header}">
           <slot name="title">
@@ -95,10 +96,18 @@ export class FabDialog extends LitElement {
     this._initHandler();
   }
 
+  /**
+   * Dispatch a custom event preceded by 'fabmodal:'
+   * 
+   * @param {string} eventName Custom event name to dispatch
+   */
   private _dispatchFabModalEvent(eventName: string): void {
     this.dispatchEvent(new CustomEvent(`fabmodal:${eventName}`));
   }
 
+  /**
+   * Toggle reduce
+   */
   async toggleReduce() {
     if (this.isReduced) {
       this.$el.querySelector(`.${this.selector.title}`)?.removeEventListener('pointerdown', this.toggleReduce);
@@ -115,6 +124,9 @@ export class FabDialog extends LitElement {
     }
   }
 
+  /**
+   * Focus dialog with z-index
+   */
   setFocused() {
     const dialogs = document.querySelectorAll('fab-dialog');
 
@@ -131,6 +143,9 @@ export class FabDialog extends LitElement {
     this.$el.classList.add('focused');
   }
 
+  /**
+   * Apply blink effet , usefull if some dialog opened
+   */
   blink() {
     this.$el.classList.add('blink');
 
@@ -139,10 +154,16 @@ export class FabDialog extends LitElement {
     }, 1000);
   }
 
+  /**
+   * Init drag moving dialog event
+   */
   private _initDrag() {
     this.$el.addEventListener('mousedown', this._fnDown);
   }
 
+  /**
+   * Init handler
+   */
   private _initHandler() {
     this.$el.addEventListener('focus', this.setFocused);
 
@@ -173,6 +194,7 @@ export class FabDialog extends LitElement {
   }
 
   /**
+   * init event on mouse down
    * @ignore
    */
   private _fnDown(ev: MouseEvent) {
@@ -195,6 +217,7 @@ export class FabDialog extends LitElement {
   }
 
   /**
+   * Move dialog during moving
    * @ignore
    */
   private _fnMove(ev: MouseEvent) {
@@ -224,6 +247,7 @@ export class FabDialog extends LitElement {
   }
 
   /**
+   * remove drag mouse event
    * @ignore
    */
   private _fnUp() {
@@ -232,7 +256,14 @@ export class FabDialog extends LitElement {
     this.$el.classList.remove(this.selector.dragging);
   }
 
+  /**
+   * toggle fullscreen dialog
+   * @returns {Promise<boolean>}
+   */
   async toggleFullscreen(): Promise<boolean> {
+    if (!this.isFocused) {
+      this.setFocused();
+    }
     if (this.isFullScreen) {
       if (this.movable) this._initDrag();
       this.isFullScreen = false;
@@ -252,24 +283,36 @@ export class FabDialog extends LitElement {
     return this.isFullScreen;
   }
 
+  /**
+   * Show dialog if is hidden
+   */
   show() {
     this._dispatchFabModalEvent('show');
     this.setAttribute('visible', '');
     this._dispatchFabModalEvent('hidden');
   }
 
+  /**
+   * Toggle visiblity of dialog
+   */
   toggle() {
     this._dispatchFabModalEvent('toggle');
     this.toggleAttribute('visible');
     this._dispatchFabModalEvent('toggled');
   }
 
+  /**
+   * Hide dialog if is visible
+   */
   hide() {
     this._dispatchFabModalEvent('hide');
     this.removeAttribute('visible');
     this._dispatchFabModalEvent('hidden');
   }
 
+  /**
+   * Remove dialog from DOM
+   */
   destroy() {
     this._dispatchFabModalEvent('destroy');
     this.remove();
