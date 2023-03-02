@@ -48,9 +48,9 @@ export class FabDialog extends LitElement {
 
   render() {
     return html`
-      <div class="${this.selector.el}${this.visible ? ' show' : ''}${this.movable ? ' draggable' : ''}${this.resizable ? ' resizable' : ''}">
+      <div tabindex="0" class="${this.selector.el}${this.visible ? ' show' : ''}${this.movable ? ' draggable' : ''}${this.resizable ? ' resizable' : ''}">
         <div class="${this.selector.header}">
-          <slot name="header">
+          <slot name="title">
             <h3 class="${this.selector.title}">Default Heading</h3>
           </slot>
           <slot name="icons">
@@ -80,7 +80,7 @@ export class FabDialog extends LitElement {
 
   firstUpdated() {
     this.$el = this.renderRoot.querySelector(`.${this.selector.el}`);
-    this._iniHandler();
+    this._initHandler();
   }
 
   private _dispatchFabModalEvent(eventName: string): void {
@@ -97,11 +97,37 @@ export class FabDialog extends LitElement {
     this._dispatchFabModalEvent('restored');
   }
 
+  setFocused() {
+    const dialogs = document.querySelectorAll('fab-dialog');
+
+    dialogs.forEach((dialog) => {
+      if (dialog !== this) {
+        dialog.$el?.classList.remove('focused');
+        dialog.$el!.tabIndex = 0;
+      } else {
+        dialog.$el?.classList.add('focused');
+        dialog.$el!.tabIndex = 1;
+      }
+    })
+
+    this.$el?.classList.add('focused');
+  }
+
+  blink() {
+    this.$el?.classList.add('blink');
+
+    window.setTimeout(() => {
+      this.$el?.classList.remove('blink');
+    }, 1000);
+  }
+
   private _initDrag() {
     this.$el?.addEventListener('mousedown', this._fnDown.bind(this));
   }
 
-  private _iniHandler() {
+  private _initHandler() {
+    this.$el?.addEventListener('focus', this.setFocused.bind(this));
+
     if (this.movable) {
       this._initDrag();
     }
@@ -121,7 +147,7 @@ export class FabDialog extends LitElement {
   private _fnDown(ev: MouseEvent) {
     const target = ev.target as HTMLElement
 
-    if (!target?.classList.contains(this.selector.header) && !target?.classList.contains(this.selector.title)) return
+    if (!target?.classList.contains(this.selector.header) && !target?.classList.contains(this.selector.title) && (!target.slot || target.slot && target.slot !== 'title')) return
 
     this._disX = ev.clientX - this.$el!.offsetLeft;
     this._disY = ev.clientY - this.$el!.offsetTop;
@@ -237,7 +263,6 @@ export class FabDialog extends LitElement {
 
     .fab-dialog {
       outline: none;
-      opacity: 0;
       z-index: 998;
       position: absolute;
       top: 50%;
@@ -262,14 +287,27 @@ export class FabDialog extends LitElement {
       resize: both;
     }
 
+    .fab-dialog.focused {
+      z-index: 999;
+    }
+
     .fab-dialog.is-dragging {
-      pointer-events: none;
+      user-select: none;
+    }
+
+    .blink {
+      animation: blinker .5s linear infinite;
+    }
+    
+    @keyframes blinker {
+      50% {
+        box-shadow: var(--fab-dialog-shadow-color) 0px 4px 16px, var(--fab-dialog-shadow-color) 0px 8px 24px, var(--fab-dialog-shadow-color) 0px 16px 30px;
+      }
     }
 
     .fab-dialog.show,
     .fab-overlay.show,
     .fab-dialog-tab.show {
-      opacity: 1;
       display: flex;
       align-items: center;
       justify-content: space-between;
