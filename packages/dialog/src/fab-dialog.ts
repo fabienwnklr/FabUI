@@ -27,11 +27,13 @@ export class FabDialog extends LitElement {
   @property({ type: Boolean })
   resizable = false;
 
-  private $el: HTMLDivElement | null = null;
   private _disX = 0;
   private _disY = 0;
-
+  
+  
+  public $el: HTMLDivElement = document.createElement('div');
   public isFullScreen = false;
+  public reduced = false;
   public name = 'fab-dialog';
   public selector = {
     el: `${this.name}`,
@@ -79,7 +81,7 @@ export class FabDialog extends LitElement {
   }
 
   firstUpdated() {
-    this.$el = this.renderRoot.querySelector(`.${this.selector.el}`);
+    this.$el = this.renderRoot.querySelector(`.${this.selector.el}`) as HTMLDivElement;
     this._initHandler();
   }
 
@@ -87,14 +89,18 @@ export class FabDialog extends LitElement {
     this.dispatchEvent(new CustomEvent(`fabmodal:${eventName}`));
   }
 
-  reduce() {
-    this.$el?.classList.add('reduced');
-    this._dispatchFabModalEvent('reduced');
-  }
-
-  restore() {
-    this.$el?.classList.remove('reduced');
-    this._dispatchFabModalEvent('restored');
+  toggleRecude() {
+    if (this.reduced) {
+      this.$el.style.minHeight = '';
+      this.$el.classList.remove('reduced');
+      this._dispatchFabModalEvent('restored');
+      this.reduced = false;
+    } else {
+      this.$el.style.minHeight = '0px';
+      this.$el.classList.add('reduced');
+      this._dispatchFabModalEvent('reduced');
+      this.reduced = true;
+    }
   }
 
   setFocused() {
@@ -102,42 +108,66 @@ export class FabDialog extends LitElement {
 
     dialogs.forEach((dialog) => {
       if (dialog !== this) {
-        dialog.$el?.classList.remove('focused');
-        dialog.$el!.tabIndex = 0;
+        dialog.$el.classList.remove('focused');
+        dialog.$el.tabIndex = 0;
       } else {
-        dialog.$el?.classList.add('focused');
-        dialog.$el!.tabIndex = 1;
+        dialog.$el.classList.add('focused');
+        dialog.$el.tabIndex = 1;
       }
     })
 
-    this.$el?.classList.add('focused');
+    this.$el.classList.add('focused');
   }
 
   blink() {
-    this.$el?.classList.add('blink');
+    this.$el.classList.add('blink');
 
     window.setTimeout(() => {
-      this.$el?.classList.remove('blink');
+      this.$el.classList.remove('blink');
     }, 1000);
   }
 
   private _initDrag() {
-    this.$el?.addEventListener('mousedown', this._fnDown.bind(this));
+    this.$el.addEventListener('mousedown', this._fnDown.bind(this));
   }
 
   private _initHandler() {
-    this.$el?.addEventListener('focus', this.setFocused.bind(this));
+    this.$el.addEventListener('focus', this.setFocused.bind(this));
 
     if (this.movable) {
       this._initDrag();
     }
 
     if (this.expandable) {
-      this.$el?.querySelector(`.${this.selector.expand}`)?.addEventListener('pointerdown', this.toggleFullscreen.bind(this));
+      this.$el.querySelector(`.${this.selector.expand}`)?.addEventListener('pointerdown', this.toggleFullscreen.bind(this));
     }
 
     if (this.reducible) {
-      this.$el?.querySelector(`.${this.selector.reduce}`)?.addEventListener('pointerdown', this.reduce.bind(this));
+      this.$el.querySelector(`.${this.selector.reduce}`)?.addEventListener('pointerdown', this.toggleRecude.bind(this));
+    }
+
+    if (this.resizable) {
+      const observer = new ResizeObserver((mutations) => {
+        // const { right, top, bottom, left } = this.$el.getBoundingClientRect()
+        // const [{ contentRect: { width, height } }] = mutations;
+        // const limitTop = 0;
+        // const limitBottom = window.innerHeight;
+        // const limitLeft = 0;
+        // const limitRight = window.innerWidth;
+
+        // if (left > limitLeft && left < limitRight && right < limitRight && right > limitLeft) {
+        //   // this.shadowRoot
+        //   this.$el.style.width = `${width}px`;
+        // } else {
+        //   this.$el.style.width = this.$el.style.width;
+        // }
+    
+        // if (top > limitTop && top < limitBottom) {
+        //   this.$el.style.top = `${height}px`;
+        // }
+      });
+      
+      observer.observe(this.$el);
     }
   }
 
@@ -149,8 +179,8 @@ export class FabDialog extends LitElement {
 
     if (!target?.classList.contains(this.selector.header) && !target?.classList.contains(this.selector.title) && (!target.slot || target.slot && target.slot !== 'title')) return
 
-    this._disX = ev.clientX - this.$el!.offsetLeft;
-    this._disY = ev.clientY - this.$el!.offsetTop;
+    this._disX = ev.clientX - this.$el.offsetLeft;
+    this._disY = ev.clientY - this.$el.offsetTop;
 
     document.onmousemove = this._fnMove.bind(this);
     document.onmouseup = this._fnUp.bind(this);
@@ -162,22 +192,29 @@ export class FabDialog extends LitElement {
    * @ignore
    */
   private _fnMove(ev: MouseEvent) {
-    this.$el!.classList.add(this.selector.dragging);
+    this.$el.classList.add(this.selector.dragging);
     const left = ev.clientX - this._disX;
     const top = ev.clientY - this._disY;
-    const limitRight = window.innerWidth - this.$el!.clientWidth / 2;
-    const limitLeft = this.$el!.clientWidth / 2;
-    const limitTop = this.$el!.clientHeight / 2;
-    const limitBottom = window.innerHeight - this.$el!.clientHeight / 2;
+    const limitRight = window.innerWidth - this.$el.clientWidth / 2;
+    const limitLeft = this.$el.clientWidth / 2;
+    const limitTop = this.$el.clientHeight / 2;
+    const limitBottom = window.innerHeight - this.$el.clientHeight / 2;
 
     if (left > limitLeft && left < limitRight) {
-      // this.shadowRoot
-      this.$el!.style.left = `${left}px`;
-    }
+      this.$el.style.left = `${left}px`;
+    } else if (left > limitLeft) {
+      this.$el.style.left = `${limitRight}px`;
+    } else if (left < limitRight) {
+      this.$el.style.left = `${limitLeft}px`;
+    } 
 
     if (top > limitTop && top < limitBottom) {
-      this.$el!.style.top = `${top}px`;
-    }
+      this.$el.style.top = `${top}px`;
+    } else if (top > limitBottom) {
+      this.$el.style.top = `${limitBottom}px`;
+    } else if (top < limitTop) {
+      this.$el.style.top = `${limitTop}px`;
+    } 
   }
 
   /**
@@ -186,13 +223,13 @@ export class FabDialog extends LitElement {
   private _fnUp() {
     document.onmousemove = null;
     document.onmouseup = null;
-    this.$el!.classList.remove(this.selector.dragging);
+    this.$el.classList.remove(this.selector.dragging);
   }
 
   toggleFullscreen(): boolean {
     if (this.$el) {
       if (this.isFullScreen) {
-        if (this.draggable) this._initDrag();
+        if (this.movable) this._initDrag();
         this.isFullScreen = false;
         // this.$bodyElement.style.overflow = 'auto';
         this.$el.classList.remove('fullScreen');
@@ -271,12 +308,12 @@ export class FabDialog extends LitElement {
       background: #fff;
       box-shadow: 0 0 8px var(--fab-dialog-shadow-color);
       box-sizing: border-box;
-      width: auto;
-      height: auto;
+      width: 500px;
+      height: 400px;
       max-width: 100%;
       max-height: 100%;
-      min-width: 150px;
-      min-height: 300px;
+      min-width: 30%;
+      min-height: 40%;
       border-radius: 5px;
       display: none;
       overflow: hidden;
@@ -353,20 +390,20 @@ export class FabDialog extends LitElement {
       z-index: 1000;
     }
 
-    .fab-dialog::-webkit-scrollbar {
+    .fab-dialog .fab-dialog-body::-webkit-scrollbar {
       width: 5px;
     }
 
-    .fab-dialog::-webkit-scrollbar-track {
+    .fab-dialog .fab-dialog-body::-webkit-scrollbar-track {
       background: #f1f1f1;
     }
 
-    .fab-dialog::-webkit-scrollbar-thumb {
+    .fab-dialog .fab-dialog-body::-webkit-scrollbar-thumb {
       background: #888;
       border-radius: 10px;
     }
 
-    .fab-dialog::-webkit-scrollbar-thumb:hover {
+    .fab-dialog .fab-dialog-body::-webkit-scrollbar-thumb:hover {
       background: #555;
     }
 
@@ -460,6 +497,17 @@ export class FabDialog extends LitElement {
       color: var(--fab-dialog-color);
       background-color: var(--fab-dialog-background-color);
       width: 100%;
+    }
+
+    .fab-dialog.reduced {
+      bottom: 0!important;
+      left: 0!important;
+      top: inherit!important;
+    }
+
+    .fab-dialog.reduced .fab-dialog-body,
+    .fab-dialog.reduced .fab-dialog-footer {
+      display: none;
     }
 
     .fab-dialog .fab-dialog-footer {
