@@ -49,16 +49,20 @@ export class FabDialog extends LitElement {
 
   render() {
     return html`
-      <div @focus=${this.setFocused.bind(this)} tabindex="0" class="${this.selector.el}${this.visible ? ' show' : ''}${this.movable ? ' draggable' : ''}${this.resizable ? ' resizable' : ''}">
+      <div
+        @focus=${this.setFocused.bind(this)}
+        tabindex="0"
+        class="${this.selector.el}${this.visible ? ' show' : ''}${this.movable ? ' draggable' : ''}${this.resizable ? ' resizable' : ''}"
+      >
         <div class="${this.selector.header}">
           <slot name="title">
             <h3 class="${this.selector.title}">Default Heading</h3>
           </slot>
           <slot name="icons">
             <div class="${this.selector.icons}">
-              ${this.reducible ? html`<button @click=${this.toggleReduce.bind(this)} class="${this.selector.reduce}"></button>` : ''}
-              ${this.expandable ? html`<button @click=${this.toggleFullscreen.bind(this)} class="${this.selector.expand}"></button>` : ''}
-              ${this.closable ? html`<button @click=${this.destroy.bind(this)} class="${this.selector.close}"></button>` : ''}
+              ${this.reducible ? html`<button @pointerdown=${this.toggleReduce.bind(this)} class="${this.selector.reduce}"></button>` : ''}
+              ${this.expandable ? html`<button @pointerdown=${this.toggleFullscreen.bind(this)} class="${this.selector.expand}"></button>` : ''}
+              ${this.closable ? html`<button @pointerdown=${this.destroy.bind(this)} class="${this.selector.close}"></button>` : ''}
             </div>
           </slot>
         </div>
@@ -82,6 +86,12 @@ export class FabDialog extends LitElement {
 
   firstUpdated() {
     this.$el = this.renderRoot.querySelector(`.${this.selector.el}`) as HTMLDivElement;
+
+    this.toggleReduce = this.toggleReduce.bind(this);
+    this.setFocused = this.setFocused.bind(this);
+    this._fnDown = this._fnDown.bind(this);
+    this._fnMove = this._fnMove.bind(this);
+    this._fnUp = this._fnUp.bind(this);
     this._initHandler();
   }
 
@@ -89,13 +99,17 @@ export class FabDialog extends LitElement {
     this.dispatchEvent(new CustomEvent(`fabmodal:${eventName}`));
   }
 
-  toggleReduce() {
+  async toggleReduce() {
     if (this.isReduced) {
+      this.$el.querySelector(`.${this.selector.title}`)?.removeEventListener('pointerdown', this.toggleReduce);
+      this._initDrag();
       this.$el.classList.remove('reduced');
       this._dispatchFabModalEvent('restored');
       this.isReduced = false;
     } else {
+      this.$el.querySelector(`.${this.selector.title}`)?.addEventListener('pointerdown', this.toggleReduce);
       this.$el.classList.add('reduced');
+      this.$el.removeEventListener('mousedown', this._fnDown);
       this._dispatchFabModalEvent('reduced');
       this.isReduced = true;
     }
@@ -126,11 +140,11 @@ export class FabDialog extends LitElement {
   }
 
   private _initDrag() {
-    this.$el.addEventListener('mousedown', this._fnDown.bind(this));
+    this.$el.addEventListener('mousedown', this._fnDown);
   }
 
   private _initHandler() {
-    this.$el.addEventListener('focus', this.setFocused.bind(this));
+    this.$el.addEventListener('focus', this.setFocused);
 
     if (this.movable) {
       this._initDrag();
@@ -174,8 +188,8 @@ export class FabDialog extends LitElement {
     this._disX = ev.clientX - this.$el.offsetLeft;
     this._disY = ev.clientY - this.$el.offsetTop;
 
-    document.onmousemove = this._fnMove.bind(this);
-    document.onmouseup = this._fnUp.bind(this);
+    document.onmousemove = this._fnMove;
+    document.onmouseup = this._fnUp;
 
     return false;
   }
@@ -218,23 +232,22 @@ export class FabDialog extends LitElement {
     this.$el.classList.remove(this.selector.dragging);
   }
 
-  toggleFullscreen(): boolean {
-    if (this.$el) {
-      if (this.isFullScreen) {
-        if (this.movable) this._initDrag();
-        this.isFullScreen = false;
-        // this.$bodyElement.style.overflow = 'auto';
-        this.$el.classList.remove('fullScreen');
-        // if (this.$expand) this.$expand.title = 'Restore';
+  async toggleFullscreen(): Promise<boolean> {
+    if (this.isFullScreen) {
+      if (this.movable) this._initDrag();
+      this.isFullScreen = false;
+      // this.$bodyElement.style.overflow = 'auto';
+      this.$el.classList.remove('fullScreen');
+      // if (this.$expand) this.$expand.title = 'Restore';
 
-        this._dispatchFabModalEvent('fullscreenCancel');
-      } else {
-        this.$el.removeEventListener('mousedown', this._fnDown);
-        this.isFullScreen = true;
-        // this.$bodyElement.style.overflow = 'hidden';
-        this.$el.classList.add('fullScreen');
-        this._dispatchFabModalEvent('fullscreen');
-      }
+      this._dispatchFabModalEvent('fullscreenCancel');
+    } else {
+      if (this.isReduced) await this.toggleReduce();
+      this.$el.removeEventListener('mousedown', this._fnDown, true);
+      this.isFullScreen = true;
+      // this.$bodyElement.style.overflow = 'hidden';
+      this.$el.classList.add('fullScreen');
+      this._dispatchFabModalEvent('fullscreen');
     }
     return this.isFullScreen;
   }
@@ -500,7 +513,7 @@ export class FabDialog extends LitElement {
       min-width: inherit !important;
       min-height: inherit !important;
       width: 15% !important;
-      transition: all 1s ease!important;
+      transition: all 1s ease !important;
     }
 
     .fab-dialog.reduced .fab-dialog-header {
@@ -508,7 +521,7 @@ export class FabDialog extends LitElement {
     }
 
     .fab-dialog.reduced .fab-dialog-icons .reduce:before {
-      content: '+'!important;
+      content: '+' !important;
     }
 
     .fab-dialog.reduced .fab-dialog-body,
