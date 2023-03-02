@@ -23,17 +23,16 @@ export class FabDialog extends LitElement {
 
   @property({ type: Boolean })
   fullscreen = false;
-  
+
   @property({ type: Boolean })
   resizable = false;
 
   private _disX = 0;
   private _disY = 0;
-  
-  
+
   public $el: HTMLDivElement = document.createElement('div');
   public isFullScreen = false;
-  public reduced = false;
+  public isReduced = false;
   public name = 'fab-dialog';
   public selector = {
     el: `${this.name}`,
@@ -50,15 +49,16 @@ export class FabDialog extends LitElement {
 
   render() {
     return html`
-      <div tabindex="0" class="${this.selector.el}${this.visible ? ' show' : ''}${this.movable ? ' draggable' : ''}${this.resizable ? ' resizable' : ''}">
+      <div @focus=${this.setFocused.bind(this)} tabindex="0" class="${this.selector.el}${this.visible ? ' show' : ''}${this.movable ? ' draggable' : ''}${this.resizable ? ' resizable' : ''}">
         <div class="${this.selector.header}">
           <slot name="title">
             <h3 class="${this.selector.title}">Default Heading</h3>
           </slot>
           <slot name="icons">
             <div class="${this.selector.icons}">
-              ${this.reducible ? html`<button class="${this.selector.reduce}"></button>` : ''} ${this.expandable ? html`<button class="${this.selector.expand}"></button>` : ''}
-              ${this.closable ? html`<button @click=${this.destroy} class="${this.selector.close}"></button>` : ''}
+              ${this.reducible ? html`<button @click=${this.toggleReduce.bind(this)} class="${this.selector.reduce}"></button>` : ''}
+              ${this.expandable ? html`<button @click=${this.toggleFullscreen.bind(this)} class="${this.selector.expand}"></button>` : ''}
+              ${this.closable ? html`<button @click=${this.destroy.bind(this)} class="${this.selector.close}"></button>` : ''}
             </div>
           </slot>
         </div>
@@ -89,17 +89,15 @@ export class FabDialog extends LitElement {
     this.dispatchEvent(new CustomEvent(`fabmodal:${eventName}`));
   }
 
-  toggleRecude() {
-    if (this.reduced) {
-      this.$el.style.minHeight = '';
+  toggleReduce() {
+    if (this.isReduced) {
       this.$el.classList.remove('reduced');
       this._dispatchFabModalEvent('restored');
-      this.reduced = false;
+      this.isReduced = false;
     } else {
-      this.$el.style.minHeight = '0px';
       this.$el.classList.add('reduced');
       this._dispatchFabModalEvent('reduced');
-      this.reduced = true;
+      this.isReduced = true;
     }
   }
 
@@ -114,7 +112,7 @@ export class FabDialog extends LitElement {
         dialog.$el.classList.add('focused');
         dialog.$el.tabIndex = 1;
       }
-    })
+    });
 
     this.$el.classList.add('focused');
   }
@@ -137,15 +135,6 @@ export class FabDialog extends LitElement {
     if (this.movable) {
       this._initDrag();
     }
-
-    if (this.expandable) {
-      this.$el.querySelector(`.${this.selector.expand}`)?.addEventListener('pointerdown', this.toggleFullscreen.bind(this));
-    }
-
-    if (this.reducible) {
-      this.$el.querySelector(`.${this.selector.reduce}`)?.addEventListener('pointerdown', this.toggleRecude.bind(this));
-    }
-
     if (this.resizable) {
       const observer = new ResizeObserver((mutations) => {
         // const { right, top, bottom, left } = this.$el.getBoundingClientRect()
@@ -154,19 +143,17 @@ export class FabDialog extends LitElement {
         // const limitBottom = window.innerHeight;
         // const limitLeft = 0;
         // const limitRight = window.innerWidth;
-
         // if (left > limitLeft && left < limitRight && right < limitRight && right > limitLeft) {
         //   // this.shadowRoot
         //   this.$el.style.width = `${width}px`;
         // } else {
         //   this.$el.style.width = this.$el.style.width;
         // }
-    
         // if (top > limitTop && top < limitBottom) {
         //   this.$el.style.top = `${height}px`;
         // }
       });
-      
+
       observer.observe(this.$el);
     }
   }
@@ -175,9 +162,14 @@ export class FabDialog extends LitElement {
    * @ignore
    */
   private _fnDown(ev: MouseEvent) {
-    const target = ev.target as HTMLElement
+    const target = ev.target as HTMLElement;
 
-    if (!target?.classList.contains(this.selector.header) && !target?.classList.contains(this.selector.title) && (!target.slot || target.slot && target.slot !== 'title')) return
+    if (
+      !target?.classList.contains(this.selector.header) &&
+      !target?.classList.contains(this.selector.title) &&
+      (!target.slot || (target.slot && target.slot !== 'title'))
+    )
+      return;
 
     this._disX = ev.clientX - this.$el.offsetLeft;
     this._disY = ev.clientY - this.$el.offsetTop;
@@ -206,7 +198,7 @@ export class FabDialog extends LitElement {
       this.$el.style.left = `${limitRight}px`;
     } else if (left < limitRight) {
       this.$el.style.left = `${limitLeft}px`;
-    } 
+    }
 
     if (top > limitTop && top < limitBottom) {
       this.$el.style.top = `${top}px`;
@@ -214,7 +206,7 @@ export class FabDialog extends LitElement {
       this.$el.style.top = `${limitBottom}px`;
     } else if (top < limitTop) {
       this.$el.style.top = `${limitTop}px`;
-    } 
+    }
   }
 
   /**
@@ -333,9 +325,9 @@ export class FabDialog extends LitElement {
     }
 
     .blink {
-      animation: blinker .5s linear infinite;
+      animation: blinker 0.5s linear infinite;
     }
-    
+
     @keyframes blinker {
       50% {
         box-shadow: var(--fab-dialog-shadow-color) 0px 4px 16px, var(--fab-dialog-shadow-color) 0px 8px 24px, var(--fab-dialog-shadow-color) 0px 16px 30px;
@@ -363,12 +355,12 @@ export class FabDialog extends LitElement {
     }
 
     .fab-dialog.fullScreen {
-      top: 0!important;
-      left: 0!important;
-      right: 0!important;
-      bottom: 0!important;
-      width: 100%!important;
-      height: 100%!important;
+      top: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
       max-width: 100%;
       max-height: 100%;
       border-radius: 0;
@@ -443,7 +435,6 @@ export class FabDialog extends LitElement {
       white-space: nowrap;
       padding: 1rem;
       margin: 0;
-      font-size: 1.3rem;
       color: rgba(0, 0, 0, 0.8);
     }
 
@@ -460,7 +451,7 @@ export class FabDialog extends LitElement {
       height: 25px;
       cursor: pointer;
       padding: 0;
-      opacity: 0.3;
+      opacity: 0.5;
       transition: opacity 0.2s ease-in;
     }
 
@@ -500,9 +491,24 @@ export class FabDialog extends LitElement {
     }
 
     .fab-dialog.reduced {
-      bottom: 0!important;
-      left: 0!important;
-      top: inherit!important;
+      bottom: 0 !important;
+      left: 0 !important;
+      top: inherit !important;
+      height: auto !important;
+      resize: none !important;
+      transform: none !important;
+      min-width: inherit !important;
+      min-height: inherit !important;
+      width: 15% !important;
+      transition: all 1s ease!important;
+    }
+
+    .fab-dialog.reduced .fab-dialog-header {
+      cursor: pointer !important;
+    }
+
+    .fab-dialog.reduced .fab-dialog-icons .reduce:before {
+      content: '+'!important;
     }
 
     .fab-dialog.reduced .fab-dialog-body,
