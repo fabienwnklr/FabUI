@@ -171,7 +171,7 @@ export class FabDialog extends LitElement {
       this._initDrag();
     }
     if (this.resizable) {
-      const observer = new ResizeObserver((mutations) => {
+      // const observer = new ResizeObserver((mutations) => {
         // const { right, top, bottom, left } = this.$el.getBoundingClientRect()
         // const [{ contentRect: { width, height } }] = mutations;
         // const limitTop = 0;
@@ -187,9 +187,9 @@ export class FabDialog extends LitElement {
         // if (top > limitTop && top < limitBottom) {
         //   this.$el.style.top = `${height}px`;
         // }
-      });
+      // });
 
-      observer.observe(this.$el);
+      // observer.observe(this.$el);
     }
   }
 

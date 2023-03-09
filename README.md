@@ -1,37 +1,13 @@
-# Lerna Getting Started Example
+# FabUI
 
-This repo is a small example of using Lerna 5+.
+FabUI is a user interface library using custom element. All of this component's is undependant.
 
-Watch this [10-minute walkthrough](https://youtu.be/1oxFYphTS4Y) to see how new versions of Lerna work.
+## Get started
 
-This repo contains three packages or projects:
+For example, let's install `dialog` custom element
 
-- `header` (a library of React components)
-- `footer` (a library of React components)
-- `remixapp` (an app written using the Remix framework which depends on both `header` and `footer`)
-
+```bash
+npm i @fabui/dialog
 ```
-packages/
-    header/
-        src/
-            ...
-        package.json
-        rollup.config.json
-        jest.config.js
 
-    footer/
-        src/
-            ...
-        package.json
-        rollup.config.json
-        jest.config.js
-
-    remixapp/
-        app/
-            ...
-        public/
-        package.json
-        remix.config.js
-
-package.json
-```
+Check it [here](https://github.com/fabienwnklr/FabUI/tree/master/packages) all available custom element

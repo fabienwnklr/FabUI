@@ -14,13 +14,17 @@
   ],
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build"
-  },
-  "dependencies": {
-    "lit": "^2.6.1"
+    "build": "tsc && vite build",
+    "test": "wtr test/**/*.test.ts --node-resolve"
   },
   "devDependencies": {
+    "@open-wc/testing": "^3.1.7",
+    "@web/dev-server-esbuild": "^0.3.3",
+    "@web/dev-server-legacy": "^1.0.1",
+    "@web/test-runner": "^0.15.1",
+    "lit": "^2.6.1",
     "typescript": "^4.9.3",
-    "vite": "^4.1.0"
+    "vite": "^4.1.0",
+    "vitest": "^0.29.2"
   }
 }
