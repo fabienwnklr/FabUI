@@ -3,9 +3,9 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "main": "dist/fab-dialog.es.js",
+  "main": "dist/dialog.js",
   "exports": {
-    ".": "./dist/fab-dialog.es.js"
+    ".": "./dist/dialog.js"
   },
   "types": "types/fab-dialog.d.ts",
   "files": [

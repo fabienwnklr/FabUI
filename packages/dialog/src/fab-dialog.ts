@@ -30,11 +30,29 @@ export class FabDialog extends LitElement {
   private _disX = 0;
   private _disY = 0;
 
+  /**
+   * @property {HTMLDivElement} $el Dialog element
+   */
   public $el: HTMLDivElement = document.createElement('div');
+   /**
+   * @property {Boolean} isFullScreen 
+   */
   public isFullScreen = false;
+   /**
+   * @property {Boolean} isFocused
+   */
   public isFocused = true;
+   /**
+   * @property {Boolean} isReduced
+   */
   public isReduced = false;
+   /**
+   * @property {String} name
+   */
   public name = 'fab-dialog';
+   /**
+   * @property {Object} selector 
+   */
   public selector = {
     el: `${this.name}`,
     header: `${this.name}-header`,
@@ -48,6 +66,9 @@ export class FabDialog extends LitElement {
     dragging: `is-dragging`
   };
 
+  /**
+   * method for render html dialog
+   */
   render() {
     return html`
       <div
@@ -94,6 +115,12 @@ export class FabDialog extends LitElement {
     this._fnMove = this._fnMove.bind(this);
     this._fnUp = this._fnUp.bind(this);
     this._initHandler();
+  }
+
+  attributeChangedCallback(name: string, _old: string | null, value: string | null): void {
+    if (this.getAttribute(name) && value) {
+        this.setAttribute(name, value);
+      }
   }
 
   /**
