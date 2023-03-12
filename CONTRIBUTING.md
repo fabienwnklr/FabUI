@@ -18,56 +18,58 @@ We strongly encourage contributors to be familiarized with these tools.
 
 ### Installing Dependencies
 
-Before you can start helping with Dashibase, you will want to install and configure the following dependencies on your
+Before you can start helping with FabUI, you will want to install and configure the following dependencies on your
 machine:
 
-* [Git](http://git-scm.com/)
+- [Git](http://git-scm.com/)
 
-* [Node.js v16.x (LTS)](http://nodejs.org)
+- [Node.js v16.x (LTS)](http://nodejs.org)
 
-* [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/)
+- [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/)
 
 ### Forking Supabase on GitHub
 
-To contribute code to Dashibase, you need to fork the [repository](https://github.com/dashibase/lotion).
+To contribute code to FabUI, you need to fork the [repository](https://github.com/fabienwnklr/fabui).
 
-## Setup Dashibase on Your Computer
+## Setup FabUI on Your Computer
 
 ### Clone the Repository
 
-To build Dashibase, you clone your fork of the repository:
+To build FabUI, you clone your fork of the repository:
 
-2. Clone your GitHub forked repository:
-   ```sh
-   git clone https://github.com/<github_username>/lotion.git
-   ```
+1. Clone your GitHub forked repository:
 
-3. Go to the Lotion directory:
-   ```sh
-   cd lotion
-   ```
+```sh
+git clone https://github.com/<github_username>/fabui.git
+```
 
-### Installing Dependencies
+2. Go to the Lotion directory:
+
+```sh
+cd fabui
+```
+
+### Installing dependencies
 
 Install npm dependencies:
 
-    ```sh
-    npm i
-    ```
+```sh
+npm i
+```
 
 ## Start a Development Server
 
 1. Start development server
 
-    ```sh
-    npm run dev
-    ```
+   ```sh
+   npm run dev
+   ```
 
 2. To access the local server, enter the following URL into your web browser:
 
-    ```sh
-    http://localhost:5173/
-    ```
+   ```sh
+   http://localhost:5173/
+   ```
 
 ## Writing Tests
 
@@ -75,7 +77,7 @@ Install npm dependencies:
 
 First, familiarize yourself with the libraries we are using for tests.
 
-Lotion uses [**Vitest**](https://vitest.dev) for unit and component tests, as well as [**Playwright**](https://playwright.dev) for e2e tests.
+Lotion uses [**Vitest**](https://vitest.dev) for unit and component tests, as well as [Open Web Components testing](https://open-wc.org/docs/testing/testing-package/) for web components tests.
 
 After cloning the repository to your local environment and running `npm i`, you can run tests with the following:
 
