@@ -96,7 +96,39 @@ All bug fixes should be accompanied by a test that replicates the bug.
 
 **When writing a test, check that it fails correctly before checking that it passes.**
 
-## Submit Your Contribution!
+## Create package
+
+first, create using [Open Web Components](https://open-wc.org/)
+
+Go to `packages` directory, `cd packages`
+
+then
+
+```bash
+npm init @open-wc@latest
+```
+
+then
+
+- ✔ What would you like to do today? › Scaffold a new project
+- ✔ What would you like to scaffold? › Web Component
+- ✔ What would you like to add? › Testing (web-test-runner)
+- ✔ Would you like to use typescript? › Yes
+- ✔ What would you like to do today? › Scaffold a new project
+- ✔ What would you like to scaffold? › Web Component
+- ✔ What would you like to add? › Testing (web-test-runner)
+- ✔ Would you like to use typescript? › Yes
+- ✔ What is the tag name of your web component? my-component
+- ✔ Do you want to write this file structure to dick ? › Yes
+- ✔ Do you want to install dependencies ? › Yes, with npm
+
+then
+
+```bash
+cd my-component && npm run start
+```
+
+## Submit Your Contribution
 
 After you've made the improvements, you can open a pull request and a member of the Dashibase team (well either SK or Alfred for now!) will work with you on the PR!
 
