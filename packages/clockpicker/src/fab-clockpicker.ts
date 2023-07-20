@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 /* eslint-disable class-methods-use-this */
 /* eslint-disable wc/guard-super-call */
 import { LitElement, css, html } from 'lit';
@@ -129,9 +130,13 @@ export class FabClockpicker extends LitElement {
 
   get headerHTML() {
     return html`
-      <button ${ref(this.hourRef)}>${this.currentHour}</button>
+      <button ${ref(this.hourRef)} @click=${this._showHours}>
+        ${this.currentHour}
+      </button>
       <span>:</span>
-      <button ${ref(this.minuteRef)}>${this.currentMinutes}</button>
+      <button ${ref(this.minuteRef)} @click=${this._showMinutes}>
+        ${this.currentMinutes}
+      </button>
       ${this.locale === 'us'
         ? html`<button ${ref(this.amRef)}>AM</button>
             <button ${ref(this.pmRef)}>PM</button>`
@@ -207,7 +212,10 @@ export class FabClockpicker extends LitElement {
     const hours = this.locale === 'us' ? USHours : FRHours;
 
     const data = hours.map(
-      hour => html`<div class="${this.packageName}__hour">${hour}</div>`
+      hour =>
+        html`<div data-hour="${hour}" class="${this.packageName}__hour">
+          ${hour}
+        </div>`
     );
 
     return html`<div
@@ -235,7 +243,10 @@ export class FabClockpicker extends LitElement {
     ];
 
     const data = minutes.map(
-      minute => html`<div class="${this.packageName}__minute">${minute}</div>`
+      minute =>
+        html`<div data-minute="${minute}" class="${this.packageName}__minute">
+          ${minute}
+        </div>`
     );
 
     return html`<div
@@ -302,6 +313,7 @@ export class FabClockpicker extends LitElement {
   }
 
   showClockpicker() {
+    this._setActiveTime();
     this.$clockpicker?.classList.add('show');
     this._isShown = true;
   }
@@ -348,8 +360,37 @@ export class FabClockpicker extends LitElement {
       `.${this.packageName}`
     ) as HTMLDivElement;
 
+    const ticks = this.shadowRoot?.querySelectorAll(
+      `.${this.packageName}__hour, .${this.packageName}__minute`
+      // eslint-disable-next-line no-undef
+    ) as NodeListOf<HTMLDivElement>;
+
+    ticks?.forEach((tick, i) => {
+      const radian = (i / 6) * Math.PI;
+      const inner = i > 0 && i < 13;
+      const innerRadius = 54;
+      const outerRadius = 80;
+      const radius = inner ? innerRadius : outerRadius;
+      const tickRadius = 13;
+      const dialRadius = 100;
+
+      tick.style.left = `${
+        dialRadius + Math.sin(radian) * radius - tickRadius
+      }px`;
+      tick.style.top = `${
+        dialRadius - Math.cos(radian) * radius - tickRadius
+      }px`;
+      if (inner) {
+        tick.style.fontSize = '120%';
+      }
+    });
+
+    this._setActiveTime();
+
     this._selectHour = this._selectHour.bind(this);
     this._selectMinute = this._selectMinute.bind(this);
+    this._showHours = this._showHours.bind(this);
+    this._showMinutes = this._showMinutes.bind(this);
 
     this._initHandler();
   }
@@ -361,6 +402,7 @@ export class FabClockpicker extends LitElement {
       }
     }
 
+    this._setActiveTime();
     this._showMinutes();
   }
 
@@ -373,6 +415,27 @@ export class FabClockpicker extends LitElement {
 
     if (this.autoClose) {
       this._done(event);
+    }
+  }
+
+  private _setActiveTime() {
+    if (this.value) {
+      const hour = this.value.split(':')[0];
+      const minute = this.value.split(':')[1];
+
+      this.querySelector(`.${this.packageName}__hour.active`)?.classList.remove(
+        'active'
+      );
+      this.querySelector(
+        `.${this.packageName}__minute.active`
+      )?.classList.remove('active');
+
+      this.$hours
+        ?.querySelector(`[data-hour="${hour}"]`)
+        ?.classList.add('active');
+      this.$minutes
+        ?.querySelector(`[data-minute="${minute}"]`)
+        ?.classList.add('active');
     }
   }
 
@@ -408,12 +471,14 @@ export class FabClockpicker extends LitElement {
   private _initHandler() {
     document.addEventListener('pointerdown', this.hideClockpicker.bind(this));
 
-    this.shadowRoot?.querySelectorAll('.fab__clockpicker__hour').forEach(el => {
-      el.addEventListener('click', this._selectHour);
-    });
+    this.shadowRoot
+      ?.querySelectorAll(`.${this.packageName}__hour`)
+      .forEach(el => {
+        el.addEventListener('click', this._selectHour);
+      });
 
     this.shadowRoot
-      ?.querySelectorAll('.fab__clockpicker__minute')
+      ?.querySelectorAll(`.${this.packageName}__minute`)
       .forEach(el => {
         el.addEventListener('click', this._selectMinute);
       });
@@ -426,6 +491,7 @@ export class FabClockpicker extends LitElement {
   static styles = css`
     :host {
       --fab-clockpicker-primary: #646cff;
+      --fab-clockpicker-primary-darken: #474dcc;
       max-width: 1280px;
       margin: 0 auto;
       padding: 2rem;
@@ -526,23 +592,25 @@ export class FabClockpicker extends LitElement {
 
     .fab__clockpicker .fab__clockpicker__body {
       background-color: #f1f1f1;
+      height: 200px;
+      width: 200px;
+      padding: 1rem;
     }
 
     .fab__clockpicker .fab__clockpicker__body .fab__clockpicker__hours,
     .fab__clockpicker .fab__clockpicker__body .fab__clockpicker__minutes {
       display: none;
+      position: relative;
     }
 
     .fab__clockpicker .fab__clockpicker__body .fab__clockpicker__hours.show,
     .fab__clockpicker .fab__clockpicker__body .fab__clockpicker__minutes.show {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
+      display: block;
     }
 
     .fab__clockpicker .fab__clockpicker__body .fab__clockpicker__hour,
     .fab__clockpicker .fab__clockpicker__body .fab__clockpicker__minute {
+      position: absolute;
       border-radius: 50%;
       color: #666;
       line-height: 26px;
@@ -553,8 +621,16 @@ export class FabClockpicker extends LitElement {
       transition: background-color 0.25s ease, color 0.25s ease;
     }
 
-    .fab__clockpicker .fab__clockpicker__body .fab__clockpicker__hour:hover {
-      background-color: #f1f1f1;
+    .fab__clockpicker .fab__clockpicker__hour.active,
+    .fab__clockpicker .fab__clockpicker__minute.active {
+      background-color: var(--fab-clockpicker-primary-darken);
+      color: #1a1a1a;
+    }
+
+    .fab__clockpicker .fab__clockpicker__hour:hover,
+    .fab__clockpicker .fab__clockpicker__minute:hover {
+      background-color: var(--fab-clockpicker-primary);
+      color: #1a1a1a;
     }
 
     .fab__clockpicker .fab__clockpicker__footer {
@@ -596,14 +672,6 @@ export class FabClockpicker extends LitElement {
       .fab__clockpicker .fab__clockpicker__body {
         background-color: #363636;
         color: #cacaca;
-      }
-
-      .fab__clockpicker .fab__clockpicker__body .fab__clockpicker__hour:hover,
-      .fab__clockpicker
-        .fab__clockpicker__body
-        .fab__clockpicker__minute:hover {
-        background-color: var(--fab-clockpicker-primary);
-        color: #1a1a1a;
       }
 
       .fab__clockpicker .fab__clockpicker__footer button {
