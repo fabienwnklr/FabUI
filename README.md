@@ -12,12 +12,23 @@ npm i @fabui/dialog
 
 ## Create package
 
-`npx lerna create *package*`
+`npm init @open-wc@latest`
 
-then install needed dependencies
+then :
 
-```
-npm i -D @open-wc/testing @web/dev-server-esbuild @web/dev-server-legacy @web/test-runner
-```
+✔ What would you like to do today? › Scaffold a new project
+✔ What would you like to scaffold? › Web Component
+✔ What would you like to add? › Testing (web-test-runner)
+✔ Would you like to use typescript? › Yes
+✔ What would you like to do today? › Scaffold a new project
+✔ What would you like to scaffold? › Web Component
+✔ What would you like to add? › Testing (web-test-runner)
+✔ Would you like to use typescript? › Yes
+✔ What is the tag name of your web component? … testing-components
+✔ Do you want to write this file structure to dick ? › Yes
+✔ Do you want to install dependencies ? › Yes, with npm
 
-Check it [here](https://github.com/fabienwnklr/FabUI/tree/master/packages) all available custom element
+All available custom element:
+
+- [fab-dialog](https://github.com/fwcie/FabUI/tree/master/packages/dialog)
+- [fab-clockpicker](https://github.com/fwcie/FabUI/tree/master/packages/clockpicker)
