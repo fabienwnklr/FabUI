@@ -1,0 +1,16 @@
+{
+    "name": "@fabui/tools",
+    "private": true,
+    "version": "0.0.0",
+    "type": "module",
+    "scripts": {
+      "dev": "vite",
+      "build": "tsc --emitDeclarationOnly && vite build",
+      "preview": "vite preview"
+    },
+    "devDependencies": {
+      "typescript": "^4.9.3",
+      "vite": "^4.1.0",
+      "vite-plugin-dts": "^3.3.1"
+    }
+  }
