@@ -98,35 +98,24 @@ All bug fixes should be accompanied by a test that replicates the bug.
 
 ## Create package
 
-first, create using [Open Web Components](https://open-wc.org/)
+first, create using [ViteJS](https://vitejs.dev/)
 
 Go to `packages` directory, `cd packages`
 
 then
 
 ```bash
-npm init @open-wc@latest
+npm create vite@latest <component> -- --template lit-ts
 ```
 
-then
-
-- ✔ What would you like to do today? › Scaffold a new project
-- ✔ What would you like to scaffold? › Web Component
-- ✔ What would you like to add? › Testing (web-test-runner)
-- ✔ Would you like to use typescript? › Yes
-- ✔ What would you like to do today? › Scaffold a new project
-- ✔ What would you like to scaffold? › Web Component
-- ✔ What would you like to add? › Testing (web-test-runner)
-- ✔ Would you like to use typescript? › Yes
-- ✔ What is the tag name of your web component? my-component
-- ✔ Do you want to write this file structure to dick ? › Yes
-- ✔ Do you want to install dependencies ? › Yes, with npm
-
-then
+then add aditionnal tools
 
 ```bash
-cd my-component && npm run start
+cd <component> && npm i -D vitest @open-wc/testing@next sass
 ```
+
+Change index.css to <component>.scss
+
 
 ## Submit Your Contribution
 

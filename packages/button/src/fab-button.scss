@@ -1,0 +1,76 @@
+:host {
+  --fab-ui-button-bg-color: #fff;
+  --fab-ui-button-text-color: #000;
+  --fab-ui-button-hover-bg-color: #e0e0e0;
+  --fab-ui-button-shadow-color: #0e1e251f;
+}
+:host {
+  display: inline-block;
+  font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif;
+}
+
+:host([hidden]) {
+  display: none;
+}
+
+/* Firefox includes a hidden border which messes up button dimensions */
+button::-moz-focus-inner {
+  border: 0;
+}
+
+button {
+  padding: 0.55rem 1.5rem;
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  cursor: pointer;
+  transition: border-color 0.25s, background-color 0.25s;
+  color: var(--fab-ui-button-text-color);
+  background-color: var(--fab-ui-button-bg-color);
+}
+
+:host([rounded-0]) button {
+  border-radius: 0;
+}
+
+:host([shadow-sm]) button {
+  box-shadow: var(--fab-ui-button-shadow-color) 0px 7px 29px 0px;
+}
+
+:host([shadow-md]) button {
+  box-shadow: var(--fab-ui-button-shadow-color) 0px 2px 4px 0px,
+    var(--fab-ui-button-shadow-color) 0px 2px 16px 0px;
+}
+
+:host([outline]) button {
+  box-shadow: none;
+  border-color: #646cff;
+}
+
+button:hover {
+  background-color: var(--fab-ui-button-hover-bg-color);
+}
+
+button:focus,
+button:focus-visible {
+  outline: 4px solid #646cff;
+}
+
+button[disabled]:hover,
+button[disabled]:focus,
+:host([active]) button[disabled] {
+  cursor: not-allowed;
+}
+
+@media (prefers-color-scheme: dark) {
+  :host {
+    --fab-ui-button-bg-color: #494949;
+    --fab-ui-button-text-color: #e0e0e0;
+    --fab-ui-button-hover-bg-color: #363636;
+    --fab-ui-button-shadow-color: #adbdc41f;
+  }
+}
