@@ -5,11 +5,12 @@
 
 .tooltip {
   visibility: hidden;
-  width: 120px;
+  min-width: 120px;
+  max-width: 500px;
+  padding: 0.5rem 1.1rem;
   background-color: var(--fab-ui-tooltip-bg);
   color: #fff;
   text-align: center;
-  padding: 5px 0;
   border-radius: 6px;
 
   /* Position the tooltip */
