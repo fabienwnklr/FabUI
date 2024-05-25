@@ -1,6 +1,17 @@
 :host {
   font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif;
-  --fab-ui-tooltip-bg: #3c3c3c;
+  --fab-ui-tooltip-bg-color: #f2f2f2;
+  --fab-ui-tooltip-color: #2c2c2c;
+  --fab-ui-button-shadow-color: #0e1e251f;
+}
+
+
+@media (prefers-color-scheme: dark) {
+  :host {
+    --fab-ui-tooltip-bg-color: #2c2c2c;
+    --fab-ui-tooltip-color: #f2f2f2;
+    --fab-ui-button-shadow-color: #f2f2f2;
+  }
 }
 
 .tooltip {
@@ -8,10 +19,11 @@
   min-width: 120px;
   max-width: 500px;
   padding: 0.5rem 1.1rem;
-  background-color: var(--fab-ui-tooltip-bg);
-  color: #fff;
+  background-color: var(--fab-ui-tooltip-bg-color);
+  color: var(--fab-ui-tooltip-color);
   text-align: center;
   border-radius: 6px;
+  box-shadow: var(--fab-ui-button-shadow-color) 0px 7px 29px 0px;
 
   /* Position the tooltip */
   position: absolute;
@@ -33,7 +45,7 @@
       margin-left: -5px;
       border-width: 5px;
       border-style: solid;
-      border-color: var(--fab-ui-tooltip-bg) transparent transparent transparent;
+      border-color: var(--fab-ui-tooltip-bg-color) transparent transparent transparent;
     }
   }
 
@@ -49,7 +61,7 @@
       margin-left: -5px;
       border-width: 5px;
       border-style: solid;
-      border-color: transparent transparent var(--fab-ui-tooltip-bg) transparent;
+      border-color: transparent transparent var(--fab-ui-tooltip-bg-color) transparent;
     }
   }
 
